@@ -49,6 +49,7 @@ app.post('/login', (req, res) => {
         message: "User Not Found"
       })
     }
+    
      // 비밀번호가 일치하는지 확인 
      user.comparePassword(req.body.password, (err, isMatch ) => {
        if (!isMatch)
