@@ -3,8 +3,8 @@ const app = express()
 const port = 5000
 const bodyParser = require('body-parser');
 const { User } = require("./models/User");
-const cookieParser = require('cookie-parser')
-
+const cookieParser = require('cookie-parser');
+const { auth } = require("./middleware/auth");
 const config = require("./config/key");
 
 //application/x-www-form-urlencoded
@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 //application/json
 app.use(bodyParser.json());
-app.use(cookieParser);
+app.use(cookieParser());
 
 const mongoose = require('mongoose')
 mongoose.connect( config.mongoURI, {
@@ -21,7 +21,7 @@ mongoose.connect( config.mongoURI, {
   .catch( err => console.log(err))
 
 
-app.get('/', (req, res) => {   res.send('Hello World!!!!!!!!!!!') })
+app.get('/', (req, res) => {   res.send('Hello Wordfdfdfdsfdsfdsfsdfdsfsdfsdfdsfdsddd!!') })
 
 
 
@@ -69,6 +69,32 @@ app.post('/login', (req, res) => {
   })
  
 
+})
+
+app.get('/api/users/auth', auth , (req, res) => {
+  
+  res.status(200).json({
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true,
+    isAuth: true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image
+  })
+
+})
+
+app.get('/api/users/logout', auth, (req, res) => {
+  User.findOneAndUpdate({ _id: req.user._id},
+    {token: ""}
+    , (err, user) => {
+      if (err) return res.json({ success: false, err });
+      return res.status(200).send({
+        success: true
+      })
+    })
 })
 
 app.listen(port, () => {   console.log(`Example app listening at http://localhost:${port}`) })

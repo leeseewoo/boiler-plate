@@ -17,7 +17,7 @@ const userSchema = mongoose.Schema({
     },
     password: {
         type: String,
-        maxLength: 50
+        maxLength: 500
     },
     lastname: {
         type: String,
@@ -38,7 +38,7 @@ const userSchema = mongoose.Schema({
 
 userSchema.pre('save', function( next ) {
 
-    console.log( "hello")
+    //console.log( "hello")
     
     var user = this;
 
@@ -73,10 +73,12 @@ userSchema.methods.comparePassword = function( plainPassword, cb) {
 }
 
 userSchema.methods.generateToken = function (cb) {
+
+    console.log('hello')
     
     var user = this;
     
-    var token = jwt.sign(user._id, 'secretToken')
+    var token = jwt.sign(user._id.toHexString(), 'secretToken')
     
     user.token = token
     user.save( function( err, user) {
@@ -85,6 +87,16 @@ userSchema.methods.generateToken = function (cb) {
     })
 }
 
+userSchema.statics.findByToken = function(token, cb) {
+    var user = this;
+
+    jwt.verify(token, 'secretToken', function(err, decoded) {
+        user.findOne({ "_id": decoded, "token": token}, function(err, user) {
+            if(err) return cb(err);
+            cb(null, user)
+        })
+    })
+}
 
 const User = mongoose.model('User', userSchema)
 
